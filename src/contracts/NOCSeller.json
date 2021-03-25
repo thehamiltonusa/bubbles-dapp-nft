@@ -1,0 +1,58 @@
+{
+  "goerli": "0x11a15A243caa26A1062C759C74a5FBe61499F7Fe",
+  "abi": [
+	{
+		"inputs": [
+			{
+				"internalType": "contract NOC",
+				"name": "_token",
+				"type": "address"
+			},
+			{
+				"internalType": "uint8",
+				"name": "_price",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "price",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "token",
+		"outputs": [
+			{
+				"internalType": "contract NOC",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	}
+]
+}

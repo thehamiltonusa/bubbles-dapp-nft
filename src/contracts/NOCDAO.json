@@ -1,0 +1,199 @@
+{
+  "goerli": "0x8fAe20486043b30E0f208c3c1866f44f09431998",
+  "abi": [
+	{
+		"inputs": [
+			{
+				"internalType": "contract NOC",
+				"name": "_token",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_blockLimit",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "id",
+				"type": "bytes"
+			}
+		],
+		"name": "SugestionAdded",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "id",
+				"type": "bytes"
+			}
+		],
+		"name": "addSugestion",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "blockLimit",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "finishVoting",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "isDAO",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "latestProposal",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "proposal",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "proposer",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "approves",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "total",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amountSent",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "blockExec",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "blockLimit",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "executed",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "token",
+		"outputs": [
+			{
+				"internalType": "contract NOC",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "userData",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "operatorData",
+				"type": "bytes"
+			}
+		],
+		"name": "tokensReceived",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+}

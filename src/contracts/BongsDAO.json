@@ -1,0 +1,62 @@
+{
+  "goerli": "0xed34ba18ad2a698ab48006ac8459e7be309bc6ca",
+  "abi":[
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "id",
+				"type": "bytes"
+			}
+		],
+		"name": "addSugestion",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "contract BongsToken",
+				"name": "_token",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "id",
+				"type": "bytes"
+			}
+		],
+		"name": "SugestionAdded",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "token",
+		"outputs": [
+			{
+				"internalType": "contract BongsToken",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+
+}
