@@ -3,7 +3,6 @@
 import { Flex, Spinner, useColorModeValue } from '@chakra-ui/react';
 import React, { useRef, useState } from 'react';
 import * as Patterns from '../patterns';
-import LoadingImg from '../images/loadingimg.png';
 
 const Blob = ({
   size,
@@ -16,7 +15,7 @@ const Blob = ({
   pattern,
 }) => {
   const ref = useRef(null);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const [setImgLoaded] = useState(false);
   const pattenBgColor = useColorModeValue('#d1d8e0', '#6c7c93');
 
   const props = {

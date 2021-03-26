@@ -16,7 +16,9 @@ const RandomizerButton = ({ playSound }) => {
         if (playSound) play();
         createRandomBlob();
       }}
+
       variant="main"
+      style={{backgroundColor: "#5f5ff9"}}
     >
       Change bubble
     </Button>

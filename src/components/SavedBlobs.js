@@ -40,26 +40,28 @@ class SavedBlobs extends React.Component {
 
   initWeb3 = async () => {
     try{
-      let web3 = new Web3("wss://goerli.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
       let coinbase
+      let web3;
       if(window.ethereum){
         await window.ethereum.enable();
         web3 = new Web3(window.ethereum);
         coinbase = await web3.eth.getCoinbase();
+      } else {
+        if(window.location.href.includes("?rinkeby")){
+          web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
+        } else {
+          web3 = new Web3("https://bsc-dataseed.binance.org/")
+        }
       }
 
       const netId = await web3.eth.net.getId();
       let itoken;
-      if(!window.ethereum){
+      if(netId !== 4 && netId !== 56){
+        alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
+      } else if(netId === 4){
+        itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
+      } else if(netId === 56){
         itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
-      } else {
-        if(netId !== 4 && netId !== 56){
-          alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
-        } else if(netId === 4){
-          itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
-        } else if(netId === 56){
-          itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
-        }
       }
 
       let address = window.location.search.split('?address=')[1];

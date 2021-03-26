@@ -21,6 +21,9 @@ const NavLinks = ({ saveBlob,mint }) => {
           <Box as={Text}>
             <Button
               variant="heavy"
+              style={{
+                backgroundColor: "#ffd300"
+              }}
               leftIcon={<BookmarkIcon fontSize="18px" />}
               aria-label="Save bubble"
               onClick={async () => {
@@ -63,6 +66,11 @@ const NavLinks = ({ saveBlob,mint }) => {
               My Bubbles
             </Button>
           </Box>
+        </HStack>
+
+      </Center>
+      <Center>
+        <HStack spacing="2px" fontSize="sm">
           <Box as={Text}>
             <Button
               href="/all-saved-blobs/"
@@ -75,22 +83,19 @@ const NavLinks = ({ saveBlob,mint }) => {
               Minted Bubbles
             </Button>
           </Box>
+          <Box as={Text}>
+            <Button
+              href="http://www.twitter.com/intent/tweet?url=https://uniquebubbles.com/&text=Generate%20and%20mint%20beautiful%20bubbles%20shapes.%20Limit%20of%201000"
+              target="_blank"
+              as={Link}
+              variant="heavy"
+              leftIcon={<TwitterIcon fontSize="18px" />}
+              aria-label="Share"
+            >
+              Share
+            </Button>
+          </Box>
         </HStack>
-
-      </Center>
-      <Center>
-        <Box as={Text}>
-          <Button
-            href="http://www.twitter.com/intent/tweet?url=https://uniquebubbles.com/&text=Generate%20and%20mint%20beautiful%bubbles%20shapes.%20Limit%20of%201000"
-            target="_blank"
-            as={Link}
-            variant="heavy"
-            leftIcon={<TwitterIcon fontSize="18px" />}
-            aria-label="Share"
-          >
-            Share
-          </Button>
-        </Box>
       </Center>
     </Box>
   );

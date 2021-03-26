@@ -14,7 +14,8 @@ import Web3 from 'web3';
 import IPFS from 'ipfs-http-client';
 import ERC721 from '../contracts/ItemsERC721.json';
 import Blob from '../components/Blob';
-
+import { parseURLParams,updateUrl } from '../utils/url.utils.js';
+import "../css/custom.css";
 const Buffer = require('buffer').Buffer;
 const ipfs = new IPFS({
   host: "ipfs.infura.io",
@@ -32,6 +33,15 @@ class IndexPage extends React.Component {
     this.initWeb3 = this.initWeb3.bind(this);
   }
 
+  componentWillMount = () => {
+    if(typeof window !== 'undefined'){
+      if(!window.location.href.includes("?e")){
+        window.history.pushState({}, null, `?e=6&gw=6&se=699724&c=fdcb6e&o=0`);
+      }
+    }
+
+  }
+
   componentDidMount = async () => {
     await this.initWeb3();
   }
@@ -40,35 +50,39 @@ class IndexPage extends React.Component {
     if (!window.ethereum) {
       alert("Please install metamask in your browser");
     }
-    await window.ethereum.enable();
-    const web3 = new Web3(window.ethereum);
-    const netId = await web3.eth.net.getId();
-    let itoken;
-    if(netId !== 4 && netId !== 56){
-      alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
-    } else if(netId === 4){
-      itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
-    } else if(netId === 56){
-      itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
+    try{
+      await window.ethereum.enable();
+      const web3 = new Web3(window.ethereum);
+      const netId = await web3.eth.net.getId();
+      let itoken;
+      if(netId !== 4 && netId !== 56){
+        alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
+      } else if(netId === 4){
+        itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
+      } else if(netId === 56){
+        itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
+      }
+      const coinbase = await web3.eth.getCoinbase();
+
+
+      const lastTokenId = Number(await itoken.methods.totalSupply().call());
+      this.setState({
+        web3: web3,
+        coinbase: coinbase,
+        itoken: itoken,
+        ipfs: ipfs,
+        lastTokenId: lastTokenId,
+        netId: netId
+      });
+      itoken.events.Transfer({
+        filter: {
+          from: '0x0000000000000000000000000000000000000000'
+        },
+        fromBlock: 'latest'
+      }, this.handleEvents);
+    } catch(err){
+      console.log(err)
     }
-    const coinbase = await web3.eth.getCoinbase();
-
-
-    const lastTokenId = Number(await itoken.methods.totalSupply().call());
-    this.setState({
-      web3: web3,
-      coinbase: coinbase,
-      itoken: itoken,
-      ipfs: ipfs,
-      lastTokenId: lastTokenId,
-      netId: netId
-    });
-    itoken.events.Transfer({
-      filter: {
-        from: '0x0000000000000000000000000000000000000000'
-      },
-      fromBlock: 'latest'
-    }, this.handleEvents);
   }
 
   mint = async () => {
@@ -79,8 +93,12 @@ class IndexPage extends React.Component {
     const ipfs = this.state.ipfs;
     const imgres = await ipfs.add(ReactDOMServer.renderToString(blobSVG));
     console.log(imgres)
+    let name = this.state.inputs["name"];
+    if(!name){
+      name = blob.name;
+    }
     let metadata = {
-        name: this.state.inputs["name"],
+        name: name,
         image: `ipfs://${imgres.path}`,
         external_url: `https://uniquebubbles.com/token-info/?tokenId=${tokenId}`,
         description: this.state.inputs["description"],
@@ -143,7 +161,8 @@ class IndexPage extends React.Component {
             direction="column"
             my="4"
             w="full"
-            display={{ base: 'flex', lg: 'none' }}
+            style={{textAlign: "center"}}
+            display={{  lg: 'flex' }}
           >
             <Logo />
             <Heading fontSize="3xl" variant="main">
@@ -183,7 +202,8 @@ class IndexPage extends React.Component {
                 justify="center"
                 direction="column"
                 mb="8"
-                display={{ base: 'none', lg: 'flex' }}
+                display={{ sm: 'none',lg: 'flex' }}
+                style={{textAlign: "center"}}
               >
                 <Logo />
                 <Heading fontSize="3xl" variant="main">
@@ -206,13 +226,16 @@ class IndexPage extends React.Component {
                   title="Info"
                   size="md"
                   src={
-                    <Button
-                      variant="silent"
-                      leftIcon={<QuestionIcon fontSize="lg" />}
-                      aria-label="Info"
-                    >
-                      Info
-                    </Button>
+                    <center>
+                      <Button
+                        variant="silent"
+                        leftIcon={<QuestionIcon fontSize="lg" />}
+                        aria-label="Info"
+                        style={{display:"block"}}
+                      >
+                        Info
+                      </Button>
+                    </center>
                   }
                 >
                   <Box>

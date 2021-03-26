@@ -40,16 +40,20 @@ class SavedBlobs extends React.Component {
   }
 
   initWeb3 = async () => {
-    let web3 = new Web3("wss://goerli.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
-    if(window.ethereum){
-      await window.ethereum.enable();
-      web3 = new Web3(window.ethereum);
-    }
-    const netId = await web3.eth.net.getId();
-    let itoken;
-    if(!window.ethereum){
-      itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
-    } else {
+    try{
+      let web3;
+      if(window.ethereum){
+        await window.ethereum.enable();
+        web3 = new Web3(window.ethereum);
+      } else {
+        if(window.location.href.includes("?rinkeby")){
+          web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
+        } else {
+          web3 = new Web3("https://bsc-dataseed.binance.org/")
+        }
+      }
+      const netId = await web3.eth.net.getId();
+      let itoken;
       if(netId !== 4 && netId !== 56){
         alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
       } else if(netId === 4){
@@ -57,36 +61,38 @@ class SavedBlobs extends React.Component {
       } else if(netId === 56){
         itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
       }
-    }
 
 
-    this.setState({
-        web3: web3,
-        itoken: itoken,
-    });
-    const lastId = await itoken.methods.totalSupply().call();
-    const promises = [];
-    for(let i = 1;i<=lastId;i++){
-      const res = {
-        returnValues: {
-          tokenId: i
+      this.setState({
+          web3: web3,
+          itoken: itoken,
+      });
+      const lastId = await itoken.methods.totalSupply().call();
+      const promises = [];
+      for(let i = 1;i<=lastId;i++){
+        const res = {
+          returnValues: {
+            tokenId: i
+          }
         }
+        promises.push(this.handleEvents(null,res))
       }
-      promises.push(this.handleEvents(null,res))
+      await Promise.all(promises);
+
+
+      this.setState({
+        loading: false
+      });
+
+      itoken.events.Transfer({
+        filter: {
+          from: '0x0000000000000000000000000000000000000000'
+        },
+        fromBlock: 'latest'
+      }, this.handleEvents);
+    } catch(err){
+
     }
-    await Promise.all(promises);
-
-
-    this.setState({
-      loading: false
-    });
-
-    itoken.events.Transfer({
-      filter: {
-        from: '0x0000000000000000000000000000000000000000'
-      },
-      fromBlock: 'latest'
-    }, this.handleEvents);
 
   }
 
