@@ -8,6 +8,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  ModalFooter,
   useDisclosure,
   Heading,
   Divider,
@@ -57,6 +58,15 @@ const Modal = ({ title, src, children, actions, size = '2xl' }) => {
           <ModalBody py="5" px="10">
             {typeof children === 'function' ? children() : children}
           </ModalBody>
+          <ModalFooter>
+            <Button
+              onClick={onClose}
+              variant="subtle"
+              right={{ base: '0', lg: '-20px' }}
+            >
+              <CloseIcon />{' '}Close
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </ChakModal>
     </>

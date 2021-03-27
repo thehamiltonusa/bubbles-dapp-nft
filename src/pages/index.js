@@ -202,10 +202,10 @@ class IndexPage extends React.Component {
                 justify="center"
                 direction="column"
                 mb="8"
-                display={{ sm: 'none',lg: 'flex' }}
+                display={{ sm: 'flex',lg: 'flex' }}
                 style={{textAlign: "center"}}
               >
-                <Logo />
+                <Logo display={{sm: 'nonde'}}/>
                 <Heading fontSize="3xl" variant="main">
                   Generate bubbles
                 </Heading>

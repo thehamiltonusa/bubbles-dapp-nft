@@ -68,7 +68,6 @@ class SavedBlobs extends React.Component {
       if(!address && coinbase){
         address = coinbase;
       }
-      console.log(address)
       const profile = await getProfile(address);
       const blockie = new Image();
       blockie.src = makeBlockie(address);
@@ -86,12 +85,15 @@ class SavedBlobs extends React.Component {
       const lastId = await itoken.methods.totalSupply().call();
       const promises = [];
       for(let i = 1;i<=lastId;i++){
-        const res = {
-          returnValues: {
-            tokenId: i
+        const tokenOwner = await itoken.methods.ownerOf(i).call();
+        if(tokenOwner.toLowerCase() === coinbase.toLowerCase()){
+          const res = {
+            returnValues: {
+              tokenId: i
+            }
           }
+          promises.push(this.handleEvents(null,res))
         }
-        promises.push(this.handleEvents(null,res))
       }
       await Promise.all(promises);
 
