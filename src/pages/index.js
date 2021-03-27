@@ -14,7 +14,6 @@ import Web3 from 'web3';
 import IPFS from 'ipfs-http-client';
 import ERC721 from '../contracts/ItemsERC721.json';
 import Blob from '../components/Blob';
-import { parseURLParams,updateUrl } from '../utils/url.utils.js';
 import "../css/custom.css";
 const Buffer = require('buffer').Buffer;
 const ipfs = new IPFS({

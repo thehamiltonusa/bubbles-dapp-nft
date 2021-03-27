@@ -69,11 +69,12 @@ class SavedBlobs extends React.Component {
         address = coinbase;
       }
       const profile = await getProfile(address);
+      console.log(profile)
       const blockie = new Image();
       blockie.src = makeBlockie(address);
       let img = blockie.src;
       if(profile.image){
-        img = profile.image
+        img = `https://ipfs.io/ipfs/${profile.image[0].contentUrl["/"]}`;
       }
       this.setState({
         web3: web3,
@@ -86,7 +87,7 @@ class SavedBlobs extends React.Component {
       const promises = [];
       for(let i = 1;i<=lastId;i++){
         const tokenOwner = await itoken.methods.ownerOf(i).call();
-        if(tokenOwner.toLowerCase() === coinbase.toLowerCase()){
+        if(tokenOwner.toLowerCase() === address.toLowerCase()){
           const res = {
             returnValues: {
               tokenId: i
@@ -155,7 +156,7 @@ class SavedBlobs extends React.Component {
             <Heading fontSize="3xl" variant="">
               <a href={`https://3box.io/${this.state.address}`} target="_blank" rel="noreferrer">
                 <center style={{wordBreak: 'break-word'}}>
-                <img src={this.state.img} width='20px' alt="" style={{borderRadius:"100px"}}/>
+                <img src={this.state.img} width='60px' alt="" style={{borderRadius:"100px"}}/>
                 {
                   (
                     !this.state.profile?.name ?
