@@ -12,7 +12,7 @@ import Modal from '../components/Common/Modal';
 import { QuestionIcon } from '../components/Common/Icons';
 import Web3 from 'web3';
 import IPFS from 'ipfs-http-client';
-import ERC721 from '../contracts/ItemsERC721.json';
+import ERC1155 from '../contracts/ItemsERC1155.json';
 import Blob from '../components/Blob';
 import "../css/custom.css";
 const Buffer = require('buffer').Buffer;
@@ -54,12 +54,12 @@ class IndexPage extends React.Component {
       const web3 = new Web3(window.ethereum);
       const netId = await web3.eth.net.getId();
       let itoken;
-      if(netId !== 4 && netId !== 56){
-        alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
+      if(netId !== 4 && netId !== 0x64){
+        alert('Connect to xDai sidechain or Rinkeby testnet');
       } else if(netId === 4){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
-      } else if(netId === 56){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.rinkeby);
+      } else if(netId === 0x64){
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.xdai);
       }
       const coinbase = await web3.eth.getCoinbase();
 
@@ -73,7 +73,7 @@ class IndexPage extends React.Component {
         lastTokenId: lastTokenId,
         netId: netId
       });
-      itoken.events.Transfer({
+      itoken.events.TransferSingle({
         filter: {
           from: '0x0000000000000000000000000000000000000000'
         },
@@ -122,8 +122,9 @@ class IndexPage extends React.Component {
     const res = await ipfs.add(JSON.stringify(metadata));
     //const uri = res[0].hash;
     const uri = res.path;
+    const fees = []
     try{
-      await this.state.itoken.methods.mint(this.state.coinbase, uri).send({
+      await this.state.itoken.methods.mint(tokenId,fees,1, uri).send({
         from: this.state.coinbase,
         value: 10 ** 18
       });
@@ -208,15 +209,15 @@ class IndexPage extends React.Component {
                 <Heading fontSize="3xl" variant="main">
                   Generate bubbles
                 </Heading>
-                <p>1 Bubble = 1 BNB</p>
+                <p>1 Bubble = 1 xDai</p>
                 {
                   (
                     this.state.lastTokenId ?
                     (
-                      <p><b>Bubbles left: {1000 - this.state.lastTokenId}</b></p>
+                      <p><b>Bubbles left: {200000 - this.state.lastTokenId}</b></p>
                     ) :
                     (
-                      <p><b>Bubbles left: 1000</b></p>
+                      <p><b>Bubbles left: 200000</b></p>
 
                     )
                   )
@@ -238,28 +239,17 @@ class IndexPage extends React.Component {
                   }
                 >
                   <Box>
-                    <p>Only 1.000 Unique Bubbles will ever exist.</p>
+                    <p>Only 200000 Unique Bubbles will ever exist.</p>
                     <br />
-                    <p>Bubbles are 1.000 unique and personalized Bubbles created by some crypto early adopters. If you ever had the opportunity to own any Bubble, you not only own a rare piece of modern art, but you are also a very early adopter.</p>
+                    <p>Bubbles are 200000 unique and personalized Bubbles created by some crypto early adopters. If you ever had the opportunity to own any Bubble, you not only own a rare piece of modern art, but you are also a very early adopter.</p>
                     <br />
                     <p>Each Bubble is generated from a creative process, the collectible is minted in a NFT, it can not be replicated or ever destroyed, it will be stored on Blockchain forever, you are also free to sell it and make profit from it.</p>
                     <br />
-                    <p>Token at: {
-                      (
-                        this.state.netId === 4 ?
-                        (
-                          <a href={`https://rinkeby.etherscan.io/token/${this.state.itoken.options.address}`} target="_blank" rel="noreferrer">{this.state.itoken.options.address}</a>
-                        ) :
-                        (
-                          this.state.netId === 56 &&
-                          (
-                            <a href={`https://bscscan.com/token/${this.state.itoken.options.address}`} target="_blank" rel="noreferrer">{this.state.itoken.options.address}</a>
-                          )
-                        )
-                      )
-                    }</p>
+                    <p>xDai Token at: <a href={`https://blockscout.com/xdai/mainnet/address/${ERC1155.xdai}`} target="_blank" rel="noreferrer">{ERC1155.xdai}</a></p>
                     <br />
-                    <p><a href="https://docs.binance.org/smart-chain/wallet/metamask.html" target="_blank" rel="noreferrer" >How to connect metamask to Binance Smart Chain</a></p>
+                    <p>Rinkeby Token at: <a href={`https://rinkeby.etherscan.io/token/${ERC1155.rinkeby}`} target="_blank" rel="noreferrer">{ERC1155.rinkeby}</a></p>
+                    <br />
+                    <p><a href="https://www.xdaichain.com/for-users/wallets/metamask/metamask-setup" target="_blank" rel="noreferrer" >How to connect metamask to xDai sidechain</a></p>
                   </Box>
                 </Modal>
               </Flex>

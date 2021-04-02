@@ -15,7 +15,7 @@ import React, { useEffect } from 'react';
 import { dynamic } from '../state';
 import Blob from './Blob';
 import { Link } from 'gatsby';
-import ERC721 from '../contracts/ItemsERC721.json';
+import ERC1155 from '../contracts/ItemsERC1155.json';
 import Web3 from 'web3';
 import { profileGraphQL, getProfile, getProfiles, getVerifiedAccounts } from '3box/lib/api';
 import makeBlockie from 'ethereum-blockies-base64';
@@ -50,18 +50,18 @@ class SavedBlobs extends React.Component {
         if(window.location.href.includes("?rinkeby")){
           web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
         } else {
-          web3 = new Web3("https://bsc-dataseed.binance.org/")
+          web3 = new Web3("https://rpc.xdaichain.com/")
         }
       }
 
       const netId = await web3.eth.net.getId();
       let itoken;
-      if(netId !== 4 && netId !== 56){
-        alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
+      if(netId !== 4 && netId !== 0x64){
+        alert('Connect to xDai or Rinkeby testnet');
       } else if(netId === 4){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
-      } else if(netId === 56){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.rinkeby);
+      } else if(netId === 0x64){
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.xdai);
       }
 
       let address = window.location.search.split('?address=')[1];
@@ -86,11 +86,11 @@ class SavedBlobs extends React.Component {
       const lastId = await itoken.methods.totalSupply().call();
       const promises = [];
       for(let i = 1;i<=lastId;i++){
-        const tokenOwner = await itoken.methods.ownerOf(i).call();
-        if(tokenOwner.toLowerCase() === address.toLowerCase()){
+        const balance = await itoken.methods.balanceOf(coinbase,i).call();
+        if(balance > 0){
           const res = {
             returnValues: {
-              tokenId: i
+              _id: i
             }
           }
           promises.push(this.handleEvents(null,res))
@@ -101,7 +101,7 @@ class SavedBlobs extends React.Component {
       this.setState({
         loading: false
       });
-      itoken.events.Transfer({
+      itoken.events.TransferSingle({
         filter: {
           from: '0x0000000000000000000000000000000000000000',
           to: address
@@ -115,8 +115,9 @@ class SavedBlobs extends React.Component {
 
   handleEvents = async (err, res) => {
     try {
+      console.log(res)
       const web3 = this.state.web3;
-      let uri = await this.state.itoken.methods.tokenURI(res.returnValues.tokenId).call();
+      let uri = await this.state.itoken.methods.uri(res.returnValues._id).call();
       console.log(uri)
       if(uri.includes("ipfs://ipfs/")){
         uri = uri.replace("ipfs://ipfs/", "")
@@ -232,7 +233,7 @@ class SavedBlobs extends React.Component {
                         _hover={{ boxShadow: '2xl', background: this.state.cardHoverBg }}
                         role="group"
                         as={Link}
-                        to={`/token-info/?tokenId=${blob.returnValues.tokenId}`}
+                        to={`/token-info/?tokenId=${blob.returnValues._id}`}
                       >
                         <Text
                           fontSize="sm"

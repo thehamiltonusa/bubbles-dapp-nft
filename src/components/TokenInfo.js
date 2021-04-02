@@ -6,7 +6,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { Link } from 'gatsby';
-import ERC721 from '../contracts/ItemsERC721.json';
+import ERC1155 from '../contracts/ItemsERC1155.json';
 import Web3 from 'web3';
 import { profileGraphQL, getProfile, getProfiles, getVerifiedAccounts } from '3box/lib/api';
 import makeBlockie from 'ethereum-blockies-base64';
@@ -37,28 +37,28 @@ class TokenInfo extends React.Component {
         if(window.location.href.includes("?rinkeby")){
           web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
         } else {
-          web3 = new Web3("https://bsc-dataseed.binance.org/")
+          web3 = new Web3("https://rpc.xdaichain.com/")
         }
       }
       const netId = await web3.eth.net.getId();
       let itoken;
-      if(netId !== 4 && netId !== 56){
-        alert('Connect to Binance Smart Chain mainnet or Rinkeby testnet');
+      if(netId !== 4 && netId !== 0x64){
+        alert('Connect to xDai or Rinkeby testnet');
       } else if(netId === 4){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.rinkeby);
-      } else if(netId === 56){
-        itoken = new web3.eth.Contract(ERC721.abi, ERC721.binance);
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.rinkeby);
+      } else if(netId === 0x64){
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.xdai);
       }
       const id = window.location.search.split('?tokenId=')[1];
-      let uri = await itoken.methods.tokenURI(id).call();
+      let uri = await itoken.methods.uri(id).call();
       if(uri.includes("ipfs://ipfs/")){
         uri = uri.replace("ipfs://ipfs/", "")
       } else {
         uri = uri.replace("ipfs://", "");
       }
       const metadata = JSON.parse(await (await fetch(`https://ipfs.io/ipfs/${uri}`)).text());
-      const creator =  await itoken.methods.minterOf(id).call();
-      const hodler = await itoken.methods.ownerOf(id).call();
+      const creator =  await itoken.methods.creators(id).call();
+      const hodler = "0x" //await itoken.methods.creators(id).call();
       const creatorProfile = await this.getProfile(creator);
       const hodlerProfile = await this.getProfile(hodler);
 
@@ -88,7 +88,7 @@ class TokenInfo extends React.Component {
     blockie.src = makeBlockie(address);
     let img = blockie.src;
     if(profile.image){
-      img = profile.image
+      img = `https://ipfs.io/ipfs/${profile.image[0].contentUrl["/"]}`;
     }
     return({
       profile:profile,
@@ -158,20 +158,6 @@ class TokenInfo extends React.Component {
                         )
                       }
                       </Link></p>
-                      <p>Hodler:
-                      <img src={obj.hodlerProfile.img} width='20px' alt="" style={{borderRadius:"100px",display: 'inline'}}/>
-                      {
-                        (
-                          obj.hodlerProfile?.profile.name ?
-                          (
-                            obj.hodlerProfile.profile.name
-                          ) :
-                          (
-                            obj.hodler
-                          )
-                        )
-                      }
-                      </p>
                     </Text>
                   </Box>
                 )
