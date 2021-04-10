@@ -35,7 +35,8 @@ const ImageSetter = ({ type, image, switchToImage }) => {
         };
         reader.readAsArrayBuffer(e.target.files[0]);
       }
-    }/>
+    }
+      accept="image/*"/>
     </Box>
   );
   return (

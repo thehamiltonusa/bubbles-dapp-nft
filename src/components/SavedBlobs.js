@@ -84,10 +84,11 @@ class SavedBlobs extends React.Component {
         img: img
       })
       const lastId = await itoken.methods.totalSupply().call();
+      console.log(lastId)
       const promises = [];
       for(let i = 1;i<=lastId;i++){
-        const balance = await itoken.methods.balanceOf(coinbase,i).call();
-        if(balance > 0){
+        const creator = await itoken.methods.creators(i).call();
+        if(creator.toLowerCase() === address.toLowerCase()){
           const res = {
             returnValues: {
               _id: i
