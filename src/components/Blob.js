@@ -15,7 +15,7 @@ const Blob = ({
   pattern,
 }) => {
   const ref = useRef(null);
-  const [setImgLoaded] = useState(false);
+  //const [setImgLoaded] = useState(false);
   const pattenBgColor = useColorModeValue('#d1d8e0', '#6c7c93');
 
   const props = {
@@ -95,9 +95,7 @@ const Blob = ({
             clipPath="url(#shape)"
             xlinkHref={image}
             preserveAspectRatio="none"
-            onLoad={() => {
-              setImgLoaded(true);
-            }}
+
           />
         </>
       )}

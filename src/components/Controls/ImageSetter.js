@@ -28,15 +28,17 @@ const ImageSetter = ({ type, image, switchToImage }) => {
         const reader = new FileReader();
         reader.onload = async function(f) {
           // The file's text will be printed here
-          console.log(reader.result);
-          const res = await ipfs.add(reader.result);
-          switchToImage(res.path);
+          //console.log(reader.result);
+          //const res = await ipfs.add(reader.result);
+          console.log(reader.result)
+          switchToImage(reader.result);
           close();
         };
-        reader.readAsArrayBuffer(e.target.files[0]);
+        //reader.readAsArrayBuffer(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
       }
     }
-      accept="image/*"/>
+      accept="image/jpg, image/jpeg, image/png" />
     </Box>
   );
   return (

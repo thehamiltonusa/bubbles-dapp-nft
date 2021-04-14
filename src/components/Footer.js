@@ -15,6 +15,7 @@ import {
 import Credits from './Misc/Credits';
 import SourceCode from './Misc/SourceCode';
 import ThemeSwitch from './ThemeSwitch';
+import { TwitterIcon } from './Common/Icons';
 
 const Footer = ({ toggleSound, playSound }) => (
   <Center my="6">
@@ -86,6 +87,18 @@ const Footer = ({ toggleSound, playSound }) => (
       >
         Telegram
       </Button>
+      <Box as={Text}>
+        <Button
+          href="https://t.me/uniquebubbles"
+          target="_blank"
+          as={Link}
+          variant="heavy"
+          leftIcon={<TwitterIcon fontSize="18px" />}
+          aria-label="Twitter"
+        >
+          Twitter
+        </Button>
+      </Box>
       <Button
         variant="silent"
         leftIcon={(() => {

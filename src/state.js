@@ -41,7 +41,7 @@ const actions = (_store) => ({
     pattern: null,
   }),
   switchToImage: (_, url) => ({
-    image: `https://ipfs.io/ipfs/${url}`,
+    image: `${url}`,
     type: 'image',
     color: START_COLOR,
     colors: [START_COLOR, END_COLOR],

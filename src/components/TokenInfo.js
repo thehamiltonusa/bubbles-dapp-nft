@@ -9,6 +9,8 @@ import { Link } from 'gatsby';
 import ERC1155 from '../contracts/ItemsERC1155.json';
 import Web3 from 'web3';
 import { profileGraphQL, getProfile, getProfiles, getVerifiedAccounts } from '3box/lib/api';
+import { ExternalLinkIcon } from '@chakra-ui/icons'
+
 import makeBlockie from 'ethereum-blockies-base64';
 
 class TokenInfo extends React.Component {
@@ -30,15 +32,10 @@ class TokenInfo extends React.Component {
 
     try{
       let web3;
-      if(window.ethereum){
-        await window.ethereum.enable();
-        web3 = new Web3(window.ethereum);
+      if(window.location.href.includes("?rinkeby")){
+        web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
       } else {
-        if(window.location.href.includes("?rinkeby")){
-          web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
-        } else {
-          web3 = new Web3("https://rpc.xdaichain.com/")
-        }
+        web3 = new Web3("https://rpc.xdaichain.com/")
       }
       const netId = await web3.eth.net.getId();
       let itoken;
@@ -158,6 +155,9 @@ class TokenInfo extends React.Component {
                         )
                       }
                       </Link></p>
+                      <p><Link href={`https://epor.io/tokens/${this.state.itoken.options.address}/${this.state.id}`} target="_blank">View on Epor.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></p>
+                      <p><Link href={`https://unifty.io/xdai/collectible.html?collection=${this.state.itoken.options.address}&id=${this.state.id}`} target="_blank">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></p>
+
                     </Text>
                   </Box>
                 )

@@ -42,15 +42,10 @@ class SavedBlobs extends React.Component {
   initWeb3 = async () => {
     try{
       let web3;
-      if(window.ethereum){
-        await window.ethereum.enable();
-        web3 = new Web3(window.ethereum);
+      if(window.location.href.includes("?rinkeby")){
+        web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
       } else {
-        if(window.location.href.includes("?rinkeby")){
-          web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
-        } else {
-          web3 = new Web3("https://rpc.xdaichain.com/")
-        }
+        web3 = new Web3("https://rpc.xdaichain.com/")
       }
       const netId = await web3.eth.net.getId();
       let itoken;

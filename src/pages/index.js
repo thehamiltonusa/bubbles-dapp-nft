@@ -1,5 +1,15 @@
 import * as React from 'react';
-import { Box, Heading, Flex , Input, Button } from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  Flex ,
+  Input,
+  Button,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+ } from '@chakra-ui/react';
 import ReactDOMServer from 'react-dom/server';
 import SEO from '../components/SEO';
 import BlobSettingsSection from '../components/BlobSettingsSection';
@@ -7,6 +17,8 @@ import BlobActionBar from '../components/BlobActionBar';
 import Logo from '../components/Common/Logo';
 import BlobContainer from '../components/BlobContainer';
 import NavLinks from '../components/NavLinks';
+import Nav from '../components/Nav';
+
 import Layout from '../components/Layout';
 import Modal from '../components/Common/Modal';
 import { QuestionIcon } from '../components/Common/Icons';
@@ -15,6 +27,8 @@ import IPFS from 'ipfs-http-client';
 import ERC1155 from '../contracts/ItemsERC1155.json';
 import Blob from '../components/Blob';
 import "../css/custom.css";
+import detectEthereumProvider from '@metamask/detect-provider'
+
 const Buffer = require('buffer').Buffer;
 const ipfs = new IPFS({
   host: "ipfs.infura.io",
@@ -24,12 +38,15 @@ const ipfs = new IPFS({
 class IndexPage extends React.Component {
 
   state = {
-    inputs: []
+    inputs: [],
+    loading: false
   }
 
   constructor(props){
     super(props);
     this.initWeb3 = this.initWeb3.bind(this);
+    this.connectWeb3 = this.connectWeb3.bind(this);
+
   }
 
   componentWillMount = () => {
@@ -46,28 +63,27 @@ class IndexPage extends React.Component {
   }
 
   initWeb3 = async () => {
-    if (!window.ethereum) {
-      alert("Please install metamask in your browser");
-    }
+
     try{
-      await window.ethereum.enable();
-      const web3 = new Web3(window.ethereum);
+      let web3;
+      if(window.location.href.includes("?rinkeby")){
+        web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
+      } else {
+        web3 = new Web3("https://rpc.xdaichain.com/")
+      }
       const netId = await web3.eth.net.getId();
       let itoken;
-      if(netId !== 4 && netId !== 0x64){
-        alert('Connect to xDai sidechain or Rinkeby testnet');
-      } else if(netId === 4){
+      if(netId === 4){
         itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.rinkeby);
       } else if(netId === 0x64){
         itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.xdai);
       }
-      const coinbase = await web3.eth.getCoinbase();
+      //const coinbase = await web3.eth.getCoinbase();
 
 
       const lastTokenId = Number(await itoken.methods.totalSupply().call());
       this.setState({
         web3: web3,
-        coinbase: coinbase,
         itoken: itoken,
         ipfs: ipfs,
         lastTokenId: lastTokenId,
@@ -83,9 +99,84 @@ class IndexPage extends React.Component {
       console.log(err)
     }
   }
+  connectWeb3 = async () => {
+    try{
+      this.setState({
+        loading: true
+      });
+      const provider = await detectEthereumProvider()
+      if(!provider._metamask.isUnlocked()){
+        alert("Please unlock your metamask first");
+        this.setState({
+          loading: false
+        });
+        return
+      }
+      if(provider){
+        try{
+          await provider.request({ method: 'eth_requestAccounts' });
+        } catch(err){
+          console.log(err);
+          this.setState({
+            loading: false,
+          });
+          return;
+        }
+      } else {
+        alert('Web3 provider not detected, please install metamask');
+        this.setState({
+          loading: false,
+        });
+        return;
+      }
+      const web3 = new Web3(provider);
+      const coinbase = await web3.eth.getCoinbase();
+      const netId = await web3.eth.net.getId();
+      let itoken;
+      if(netId === 4){
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.rinkeby);
+      } else if(netId === 0x64){
+        itoken = new web3.eth.Contract(ERC1155.abi, ERC1155.xdai);
+      }
+      if(netId !== 4 && netId !== 0x64){
+        alert('Connect to xDAI network or Rinkeby testnet');
+        if(window.location.href.includes("?rinkeby")){
+          web3 = new Web3("wss://rinkeby.infura.io/ws/v3/e105600f6f0a444e946443f00d02b8a9");
+        } else {
+          web3 = new Web3("https://rpc.xdaichain.com/")
+        }
+      }
+      const lastTokenId = Number(await itoken.methods.totalSupply().call());
+
+      this.setState({
+        web3: web3,
+        itoken: itoken,
+        coinbase:coinbase,
+        loading: false,
+        provider: provider,
+        lastTokenId: lastTokenId
+      });
+
+      itoken.events.TransferSingle({
+        filter: {
+          from: '0x0000000000000000000000000000000000000000'
+        },
+        fromBlock: 'latest'
+      }, this.handleEvents);
+    } catch(err){
+      console.log(err)
+    }
+  }
 
   mint = async () => {
+
+    try{
+    this.setState({
+      minting: true
+    });
+
     const blob = JSON.parse(localStorage.getItem('blobs'))[0];
+    console.log(blob)
     const blobSVG =  <Blob {...blob} />
     const lastTokenId = Number(await this.state.itoken.methods.totalSupply().call());
     const tokenId = lastTokenId + 1;
@@ -96,39 +187,93 @@ class IndexPage extends React.Component {
     if(!name){
       name = blob.name;
     }
+    for(let i = 1;i<=this.state.lastTokenId;i++){
+      const uriToken = await this.state.itoken.methods.uri(i).call();
+      const metadata = JSON.parse(await (await fetch(`https://ipfs.io/ipfs/${uriToken.replace("ipfs://","")}`)).text());
+      if(metadata.image===`ipfs://${imgres.path}` || metadata.name.toLowerCase() === name.toLowerCase()){
+        alert("Token with same image or name was already minted");
+        this.setState({
+          minting: false
+        });
+        return;
+      }
+    }
+    const allTxs = await this.state.web3.eth.getTransactionCount(this.state.coinbase,'pending');
+    const confirmedTxs = await this.state.web3.eth.getTransactionCount(this.state.coinbase);
+    if(allTxs > confirmedTxs){
+      alert("Wait all pending txs be confirmed");
+      this.setState({
+        minting: false
+      });
+      return;
+    }
+
+    let color = blob.color;
+    if(blob.type === "gradient"){
+      color = ` { from: ${ blob.colors[0]} , to : ${blob.colors[1]} }`;
+    }
+    let pattern;
+    if(blob.type === "pattern"){
+      pattern = blob.pattern;
+    }
     let metadata = {
         name: name,
         image: `ipfs://${imgres.path}`,
         external_url: `https://uniquebubbles.com/token-info/?tokenId=${tokenId}`,
         description: this.state.inputs["description"],
-        attributes: [{
-            trait_type: "Name",
-            value: this.state.inputs["name"]
+        attributes: [
+          {
+              trait_type: "Type",
+              value: blob.type
           },
           {
-            trait_type: "Date",
-            value: new Date().getTime()
+              trait_type: "Color",
+              value: color
           },
           {
-            trait_type: "Artist",
-            value: this.state.coinbase
+              trait_type: "Edges",
+              value: blob.edges
           },
           {
-              trait_type: "GeneratedName",
-              value: blob.name
+              trait_type: "Growth",
+              value: blob.growth
           },
+          {
+              trait_type: "Outlined",
+              value: blob.isOutline
+          },
+          {
+              trait_type: "Pattern",
+              value: pattern
+          },
+          {
+              trait_type: "Seed",
+              value: blob.seed
+          }
         ]
     }
     const res = await ipfs.add(JSON.stringify(metadata));
     //const uri = res[0].hash;
     const uri = res.path;
+    console.log(uri);
     const fees = []
-    try{
+
       await this.state.itoken.methods.mint(tokenId,fees,1, uri).send({
         from: this.state.coinbase,
-        value: 10 ** 18
+        value: 10 ** 18,
+        gasPrice: 1000000000
       });
+
+
+      this.setState({
+        minting: false
+      });
+      return(true);
+
     } catch(err){
+      this.setState({
+        minting: false
+      });
       console.log(err)
     }
   }
@@ -154,6 +299,7 @@ class IndexPage extends React.Component {
           title="Bubbles - Generate and mint beautiful blob shapes as NFT"
           description="Mint customizable Bubbles as NFT. Create random or fixed blobs, loop, animate, clip them with ease"
         />
+        <Nav connectWeb3={this.connectWeb3} loading={this.state.loading} coinbase={this.state.coinbase}/>
         <Flex wrap="wrap" flex="1">
           <Flex
             align="center"
@@ -168,6 +314,19 @@ class IndexPage extends React.Component {
             <Heading fontSize="3xl" variant="main">
               Generate and mint bubbles
             </Heading>
+            {
+              (
+                this.state.coinbase?.toLowerCase() === "0x4d2907583F6abc6124dAB05bc256ADAC123e78cC".toLowerCase() &&
+                (
+                  <Alert status="error">
+                    <AlertIcon />
+                    <AlertTitle mr={2}>Please contact developers!</AlertTitle>
+                    <AlertDescription>You minted 4 bubbles which 2 we believe were error. Contact us to lock those tokens and receive back 2 xdai. Sorry for that incovenience.</AlertDescription>
+                  </Alert>
+                )
+
+              )
+            }
           </Flex>
           <Box
             w={{ base: '100%', lg: 8 / 12 }}
@@ -205,11 +364,10 @@ class IndexPage extends React.Component {
                 display={{ sm: 'flex',lg: 'flex' }}
                 style={{textAlign: "center"}}
               >
-                <Logo display={{sm: 'nonde'}}/>
                 <Heading fontSize="3xl" variant="main">
                   Generate bubbles
                 </Heading>
-                <p>1 Bubble = 1 xDai</p>
+                <p>1 xDai = 1 Bubble</p>
                 {
                   (
                     this.state.lastTokenId ?
@@ -274,10 +432,23 @@ class IndexPage extends React.Component {
                   name = 'description'
                  / >
               </Box>
-              <NavLinks mint={this.mint}/>
+              <NavLinks mint={this.mint} coinbase={this.state.coinbase} connectWeb3={this.connectWeb3} loading={this.state.loading} minting={this.state.minting}/>
             </Box>
           </Box>
         </Flex>
+        {
+          (
+            this.state.coinbase?.toLowerCase() === "0x4d2907583F6abc6124dAB05bc256ADAC123e78cC".toLowerCase() &&
+            (
+              <Alert status="error">
+                <AlertIcon />
+                <AlertTitle mr={2}>Please contact developers!</AlertTitle>
+                <AlertDescription>You minted 4 bubbles which 2 we believe were error. Contact us to lock those tokens and receive back 2 xdai. Sorry for that incovenience.</AlertDescription>
+              </Alert>
+            )
+
+          )
+        }
       </Layout>
     )
   }
