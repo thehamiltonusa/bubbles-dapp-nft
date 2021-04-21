@@ -6,11 +6,15 @@ import {
   Text,
   Link,
   useToast,
+  Avatar,
 } from '@chakra-ui/react';
 import React from 'react';
 import { Link as GatbsyLink } from 'gatsby';
 import { SavedIcon, TwitterIcon, BookmarkIcon } from './Common/Icons';
 import { dynamic } from '../state';
+
+import makeBlockie from 'ethereum-blockies-base64';
+
 
 const NavLinks = (props) => {
   const toast = useToast();
@@ -60,7 +64,27 @@ const NavLinks = (props) => {
                    </Button>
                  ) :
                  (
-                   <>{' '}<small>Web3 connected</small>{' '}</>
+                   <>{' '}
+                   <Avatar src={makeBlockie(props.coinbase)} size='sm' />
+                   {' '}
+                   {
+                     (
+                       props.netId === 4 ?
+                       (
+                         <small>RINKEBY</small>
+                       ) :
+                       (
+                         props.netId === 0x64 ?
+                         (
+                           <small>XDAI</small>
+                         ) :
+                         (
+                           <small style={{color: "red"}}>WRONG NETWORK</small> 
+                         )
+                       )
+                     )
+                   }
+                   </>
                  )
               ) :
               (

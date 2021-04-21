@@ -140,7 +140,6 @@ class TokenInfo extends React.Component {
                     <Text my="20" fontSize="2xl">
                       <p>Name: {obj.metadata.name}</p>
                       <p>Description: {obj.metadata.description}</p>
-                      <p>Date: {new Date(obj.metadata.attributes[1].value).toUTCString()}</p>
                       <p>Creator: <Link to={`/saved-blobs/?address=${obj.creator}`}>
                       <img src={obj.creatorProfile.img} width='20px' alt="" style={{borderRadius:"100px",display: 'inline'}}/>
                       {

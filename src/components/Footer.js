@@ -89,7 +89,7 @@ const Footer = ({ toggleSound, playSound }) => (
       </Button>
       <Box as={Text}>
         <Button
-          href="https://t.me/uniquebubbles"
+          href="https://twitter.com/BubblesDAPP"
           target="_blank"
           as={Link}
           variant="heavy"

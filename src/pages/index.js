@@ -59,7 +59,12 @@ class IndexPage extends React.Component {
   }
 
   componentDidMount = async () => {
-    await this.initWeb3();
+    const hasLogged = localStorage.getItem('logged');
+    if(hasLogged){
+      await this.connectWeb3();
+    } else {
+      await this.initWeb3();
+    }
   }
 
   initWeb3 = async () => {
@@ -104,13 +109,18 @@ class IndexPage extends React.Component {
       this.setState({
         loading: true
       });
-      const provider = await detectEthereumProvider()
-      if(!provider._metamask.isUnlocked()){
-        alert("Please unlock your metamask first");
-        this.setState({
-          loading: false
-        });
-        return
+      let provider;
+      if(window.ethereum?.isMetamask){
+        provider = await detectEthereumProvider();
+        if(!provider._metamask.isUnlocked()){
+          alert("Please unlock your metamask first");
+          this.setState({
+            loading: false
+          });
+          return
+        }
+      } else {
+        provider = window.ethereum;
       }
       if(provider){
         try{
@@ -154,6 +164,7 @@ class IndexPage extends React.Component {
         coinbase:coinbase,
         loading: false,
         provider: provider,
+        netId: netId,
         lastTokenId: lastTokenId
       });
 
@@ -163,6 +174,10 @@ class IndexPage extends React.Component {
         },
         fromBlock: 'latest'
       }, this.handleEvents);
+      localStorage.setItem('logged',true);
+      provider.on('accountsChanged', accounts => window.location.reload(true));
+      provider.on('chainChanged', chainId => window.location.reload(true));
+
     } catch(err){
       console.log(err)
     }
@@ -299,7 +314,7 @@ class IndexPage extends React.Component {
           title="Bubbles - Generate and mint beautiful blob shapes as NFT"
           description="Mint customizable Bubbles as NFT. Create random or fixed blobs, loop, animate, clip them with ease"
         />
-        <Nav connectWeb3={this.connectWeb3} loading={this.state.loading} coinbase={this.state.coinbase}/>
+        <Nav connectWeb3={this.connectWeb3} loading={this.state.loading} coinbase={this.state.coinbase} netId={this.state.netId}/>
         <Flex wrap="wrap" flex="1">
           <Flex
             align="center"
