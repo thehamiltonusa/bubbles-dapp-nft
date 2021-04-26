@@ -8,6 +8,7 @@ import SEO from '../components/SEO';
 import Logo from '../components/Common/Logo';
 import SavedBlobs from '../components/AllSavedBlobs';
 import Layout from '../components/Layout';
+
 const SecondPage = () => (
   <Layout>
     <SEO

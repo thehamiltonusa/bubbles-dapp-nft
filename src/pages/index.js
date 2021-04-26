@@ -195,7 +195,6 @@ class IndexPage extends React.Component {
     const blobSVG =  <Blob {...blob} />
     const lastTokenId = Number(await this.state.itoken.methods.totalSupply().call());
     const tokenId = lastTokenId + 1;
-    const ipfs = this.state.ipfs;
     const imgres = await ipfs.add(ReactDOMServer.renderToString(blobSVG));
     console.log(imgres)
     let name = this.state.inputs["name"];
@@ -226,7 +225,10 @@ class IndexPage extends React.Component {
     let color = blob.color;
     if(blob.type === "gradient"){
       color = ` { from: ${ blob.colors[0]} , to : ${blob.colors[1]} }`;
+    } else if(blob.type === "image"){
+          color = null
     }
+
     let pattern;
     if(blob.type === "pattern"){
       pattern = blob.pattern;
@@ -329,19 +331,7 @@ class IndexPage extends React.Component {
             <Heading fontSize="3xl" variant="main">
               Generate and mint bubbles
             </Heading>
-            {
-              (
-                this.state.coinbase?.toLowerCase() === "0x4d2907583F6abc6124dAB05bc256ADAC123e78cC".toLowerCase() &&
-                (
-                  <Alert status="error">
-                    <AlertIcon />
-                    <AlertTitle mr={2}>Please contact developers!</AlertTitle>
-                    <AlertDescription>You minted 4 bubbles which 2 we believe were error. Contact us to lock those tokens and receive back 2 xdai. Sorry for that incovenience.</AlertDescription>
-                  </Alert>
-                )
 
-              )
-            }
           </Flex>
           <Box
             w={{ base: '100%', lg: 8 / 12 }}

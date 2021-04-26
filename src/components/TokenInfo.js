@@ -3,6 +3,7 @@ import {
   Box,
   Text,
   Spinner,
+  Center,
 } from '@chakra-ui/react';
 import React from 'react';
 import { Link } from 'gatsby';
@@ -119,7 +120,7 @@ class TokenInfo extends React.Component {
                   </Box>
                 ) : (
                   <Box>
-                    <center>
+                    <Center>
                     {
                       (
                         obj.metadata.image.includes('ipfs://') ?
@@ -136,7 +137,9 @@ class TokenInfo extends React.Component {
                         )
                       )
                     }
-                    </center>
+
+                    </Center>
+                    <Center>
                     <Text my="20" fontSize="2xl">
                       <p>Name: {obj.metadata.name}</p>
                       <p>Description: {obj.metadata.description}</p>
@@ -158,6 +161,7 @@ class TokenInfo extends React.Component {
                       <p><Link href={`https://unifty.io/xdai/collectible.html?collection=${this.state.itoken.options.address}&id=${this.state.id}`} target="_blank">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></p>
 
                     </Text>
+                    </Center>
                   </Box>
                 )
             )
