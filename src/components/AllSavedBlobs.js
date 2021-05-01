@@ -10,6 +10,7 @@ import {
   Spinner,
   Center,
   Image,
+  Select,
   useColorModeValue
 } from '@chakra-ui/react';
 
@@ -99,8 +100,16 @@ class SavedBlobs extends React.Component {
           coinbase:coinbase
       });
       const lastId = await itoken.methods.totalSupply().call();
+      const totalPages = (lastId/10);
+      const pages = [];
+      for(let i = 0;i<totalPages;i++){
+        pages.push(i);
+      }
+      this.setState({
+        pages: pages
+      })
       const promises = [];
-      for(let i = 1;i<=lastId;i++){
+      for(let i = 1;i<=10;i++){
         const res = {
           returnValues: {
             _id: i
@@ -227,6 +236,36 @@ class SavedBlobs extends React.Component {
     await this.forceUpdate();
   }
 
+  changePage = async (e) => {
+    this.setState({
+      savedBlobs: [],
+      page: e.target.value
+    });
+    const promises = [];
+    const lastId = await this.state.itoken.methods.totalSupply().call();
+    const totalPages = (lastId/10);
+    const pages = [];
+    for(let i = 0;i<totalPages;i++){
+      pages.push(i);
+    }
+    this.setState({
+      pages: pages
+    })
+    for(let i = 10*Number(e.target.value) + 1;i <= 10*(Number(e.target.value)+1);i++){
+      const res = {
+        returnValues: {
+          _id: i
+        }
+      }
+      promises.push(this.handleEvents(null,res));
+
+    }
+    await Promise.all(promises);
+
+  }
+
+
+
   render(){
     return (
       <Box>
@@ -251,6 +290,18 @@ class SavedBlobs extends React.Component {
                 </Box>
               ) :
               (
+                <>
+                <Box>
+                <Select placeholder="Select page" onChange={this.changePage}>
+                  {
+                    this.state.pages?.map(item => {
+                      return(
+                        <option value={item}>Page {item+1} - From ID {item*10 + 1} to {(item+1)*10}</option>
+                      )
+                    })
+                  }
+                </Select>
+                </Box>
                 <SimpleGrid
                   columns={{ sm: 1, md: 5  }}
                   spacing="40px"
@@ -348,6 +399,7 @@ class SavedBlobs extends React.Component {
                     })
                   }
                 </SimpleGrid>
+                </>
               )
 
             )
