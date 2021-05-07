@@ -9,8 +9,11 @@ import {
   Text,
   Flex,
   Heading,
-  Spinner
+  Spinner,
+  Center
 } from '@chakra-ui/react';
+import { ExternalLinkIcon } from '@chakra-ui/icons'
+
 import React, { useEffect } from 'react';
 import { dynamic } from '../state';
 import Blob from './Blob';
@@ -222,57 +225,61 @@ class SavedBlobs extends React.Component {
                 justifyContent="center"
               >
 
-                {
-                  this.state.savedBlobs?.map((string) => {
-                    const blob = JSON.parse(string);
-                    return(
-                      <LinkBox
-                        // h="200"
-                        rounded="2xl"
-                        p="5"
-                        borderWidth="1px"
-                        _hover={{ boxShadow: '2xl', background: this.state.cardHoverBg }}
-                        role="group"
-                        as={Link}
-                        to={`/token-info/?tokenId=${blob.returnValues._id}`}
+              {
+                this.state.savedBlobs?.map((string) => {
+                  const blob = JSON.parse(string);
+                  return(
+                    <Box
+                      rounded="2xl"
+                      p="5"
+                      borderWidth="1px"
+                      _hover={{ boxShadow: '2xl', background: this.state.cardHoverBg }}
+                    >
+                      <Heading
+                        fontSize="sm"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
                       >
-                        <Text
-                          fontSize="sm"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="space-between"
-                        >
-                          <LinkOverlay
-                            style={{ textTransform: 'uppercase', fontWeight: 600 }}
-                            href={blob.url}
-                          >
-                            {blob.metadata.name}
-                          </LinkOverlay>
-                        </Text>
-                        <Divider mt="4" />
-                        {
+                          {blob.metadata.name}
+                      </Heading>
+                      <Divider mt="4" />
+                      <Center>
+                        <object type="text/html"
+                        data={`https://ipfs.io/ipfs/${blob.metadata.image.replace("ipfs://","")}`}
+                        width="196px"
+                        style={{borderRadius: "100px"}}>
+                        </object>
+                      </Center>
+                      <Divider mt="4" />
+                      {
+                        (
+                          blob.metadata.description &&
                           (
-                            blob.metadata.image.includes('ipfs://') ?
-                            (
-                              <center>
-                                <object type="text/html"
-                                data={`https://ipfs.io/ipfs/${blob.metadata.image.replace("ipfs://","")}`}
-                                width="196px"
-                                style={{borderRadius: "100px"}}>
-                                </object>
-                              </center>
-                            ) :
-                            (
-                              <center>
-                                <img src={blob.metadata.image} width='196px' alt=""  style={{borderRadius: "100px"}} />
-                              </center>
-                            )
+                            <>
+                            <Text>
+                            <b>{blob.metadata.description}</b>
+                            </Text>
+                            <Divider mt="4" />
+                            </>
                           )
-                        }
-                      </LinkBox>
-                    )
-                  })
-                }
+                        )
+                      }
+
+                      <Text>
+                      <p><small>Token ID: {blob.returnValues._id}</small></p>
+                      {
+                        blob.metadata.attributes.map(item => {
+                          return(<p><small>{item.trait_type} : {item.value}</small></p>)
+                        })
+                      }
+                      <p><small><Link href={`https://epor.io/tokens/${this.state.itoken.options.address}/${blob.returnValues._id}`} target="_blank">View on Epor.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></small></p>
+                      <p><small><Link href={`https://unifty.io/xdai/collectible.html?collection=${this.state.itoken.options.address}&id=${blob.returnValues._id}`} target="_blank">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></small></p>
+                      </Text>
+                    </Box>
+                  )
+                })
+              }
               </SimpleGrid>
             )
           )

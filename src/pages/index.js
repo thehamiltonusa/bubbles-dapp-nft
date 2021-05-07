@@ -61,7 +61,13 @@ class IndexPage extends React.Component {
   componentDidMount = async () => {
     const hasLogged = localStorage.getItem('logged');
     if(hasLogged){
-      await this.connectWeb3();
+      if(window.ethereum?.isMetaMask){
+        if(! await window.ethereum._metamask.isUnlocked()){
+          await this.initWeb3();
+          return
+        }
+        await this.connectWeb3();
+      }
     } else {
       await this.initWeb3();
     }

@@ -6,13 +6,17 @@ import {
   LinkBox,
   LinkOverlay,
   SimpleGrid,
+  VStack,
   Text,
   Spinner,
   Center,
   Image,
   Select,
+  Heading,
+  Avatar,
   useColorModeValue
 } from '@chakra-ui/react';
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 
 import React, { useEffect } from 'react';
 import { Link } from 'gatsby';
@@ -22,6 +26,8 @@ import ERC1155 from '../contracts/ItemsERC1155.json';
 import LikesERC1155 from '../contracts/ERC1155Likes.json';
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider'
+
+import makeBlockie from 'ethereum-blockies-base64';
 
 
 class SavedBlobs extends React.Component {
@@ -119,6 +125,8 @@ class SavedBlobs extends React.Component {
       }
       await Promise.all(promises);
 
+      await this.forceUpdate();
+
 
       this.setState({
         loading: false
@@ -166,11 +174,14 @@ class SavedBlobs extends React.Component {
       }
 
       const metadata = JSON.parse(await (await fetch(`https://ipfs.io/ipfs/${uri}`)).text());
+      const creator = await this.state.itoken.methods.creators(res.returnValues._id).call();
 
 
       const obj = {
         returnValues: res.returnValues,
-        metadata: metadata
+        metadata: metadata,
+        creator: creator
+
       }
       if (!this.state.savedBlobs.includes(JSON.stringify(obj))) {
         this.state.savedBlobs.push(JSON.stringify(obj));
@@ -179,7 +190,7 @@ class SavedBlobs extends React.Component {
                                                   likes: likes,
                                                   liked: liked
                                                 };
-      await this.forceUpdate();
+
     } catch (err) {
       console.log(err);
     }
@@ -239,7 +250,8 @@ class SavedBlobs extends React.Component {
   changePage = async (e) => {
     this.setState({
       savedBlobs: [],
-      page: e.target.value
+      page: e.target.value,
+      loading: true
     });
     const promises = [];
     const lastId = await this.state.itoken.methods.totalSupply().call();
@@ -262,6 +274,11 @@ class SavedBlobs extends React.Component {
     }
     await Promise.all(promises);
 
+    await this.forceUpdate();
+    this.setState({
+      loading: false
+    })
+
   }
 
 
@@ -269,6 +286,7 @@ class SavedBlobs extends React.Component {
   render(){
     return (
       <Box>
+      <VStack spacing={12}>
         {
           (
             this.state.loading ?
@@ -302,110 +320,129 @@ class SavedBlobs extends React.Component {
                   }
                 </Select>
                 </Box>
+
+                <Box>
                 <SimpleGrid
                   columns={{ sm: 1, md: 5  }}
                   spacing="40px"
                   mb="20"
                   justifyContent="center"
                 >
-                  {
-                    this.state.savedBlobs?.map((string) => {
-                      const blob = JSON.parse(string);
-                      return(
-                        <Box
-                          rounded="2xl"
-                          p="5"
-                          borderWidth="1px"
-                          _hover={{ boxShadow: '2xl', background: this.state.cardHoverBg }}
+                {
+                  this.state.savedBlobs?.map((string) => {
+                    const blob = JSON.parse(string);
+                    return(
+                      <Box
+                        rounded="2xl"
+                        p="5"
+                        borderWidth="1px"
+                        _hover={{ boxShadow: '2xl', background: this.state.cardHoverBg }}
+                      >
+                        <Heading
+                          fontSize="sm"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="space-between"
                         >
-                          <LinkBox
-                            // h="200"
-                            role="group"
-                            as={Link}
-                            to={`/token-info/?tokenId=${blob.returnValues._id}`}
-                          >
-                            <Text
-                              fontSize="sm"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="space-between"
-                            >
-                              <LinkOverlay
-                                style={{ textTransform: 'uppercase', fontWeight: 600 }}
-                                href={blob.url}
-                              >
-                                {blob.metadata.name}
-                              </LinkOverlay>
-                            </Text>
-                            <Divider mt="4" />
-                            <center>
-                              <object type="text/html"
-                              data={`https://ipfs.io/ipfs/${blob.metadata.image.replace("ipfs://","")}`}
-                              width="196px"
-                              style={{borderRadius: "100px"}}>
-                              </object>
-                            </center>
-
-                          </LinkBox>
-                          <Divider mt="4" />
-                          <Center>
-                            <Text>
-                              <p>Likes: {this.state.likes[blob.returnValues._id].likes}</p>
-                            </Text>
-                          </Center>
-                          <Center>
-
-                          {
+                            {blob.metadata.name}
+                        </Heading>
+                        <Divider mt="4" />
+                        <Center>
+                          <object type="text/html"
+                          data={`https://ipfs.io/ipfs/${blob.metadata.image.replace("ipfs://","")}`}
+                          width="196px"
+                          style={{borderRadius: "100px"}}>
+                          </object>
+                        </Center>
+                        <Divider mt="4" />
+                        {
+                          (
+                            blob.metadata.description &&
                             (
-                              this.state.coinbase &&
-                              (
-                                !this.state.loadingLikes[blob.returnValues._id] ?
-                                (
-                                  !this.state.likes[blob.returnValues._id].liked ?
-                                  (
-                                    <Button
-                                      variant="heavy"
-                                      leftIcon={<Image boxSize="25px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAC3UlEQVRoge2ZPWgUQRTHf2f0NBYGJTYSxELwExKCwYA2KgiKpFHsLC1EMViIFiIGK7HRRkUQJJigCGJhYaEoKIqNBDvNKRJN/Iz4hacYE4t3x769u72dm7nb2eJ+sDDsvPvP/92+/ZgZaNIk9cwBTgHvgXfAHWCHV0c1chqYqXAM+DRlSjuQp3ICM8ABf9bM2ENg9gnQAVxX574Bbd7cGTBEYPZo4VwWeKnO7/VjLZ4W4DOB0S7V16/OX03emhm9BCbHgYzq61R9z10GmeXy4xi2qfZtxGyRV6q9pIEenHhK8C/vKunLqr58wr6M6CMw+JvyJ02H6p9M1lo8C4EJAoMXKsRsVf0jyVkz4zKBuQkkoVIOqZjB5KzFs53wm7YvIu6GitmfjLV42oAxAmNXIuJmA19V3IpE3BlwicDUR2BxRNwGFfc6GWvxbAGmCYztrBI7oOIuNtpYa2HAHDBFuL6jjmsxmo+r/PYv8BYYRq6Us/mHhqZNSqfI9xr0ziH3jBX6Upseuw10TyIvN1PN87YJ5JTIYWRqWAk9mCstwFrgVonuRhsxXfPZKnH1TKBIBripdIdtREyNNSIBgG6lO2Yj4DuBBUr3V1RQI+cDrixV7S9RQWlOYL1qR36xpjmBzap9z0bA9z0wrnS7bQR8JrBKaU5SpVLSWkK6fO4jH4oVSWsCm1Tbqv7BXwllgE9Kc42tkK8EupTeB8ILYmWksYR0/d8l5o9JYwJ1qX/wU0LzgR9Kb7mLmI8E9imtZ65iJvMBvcb5D1jkMN4ywsvx/Q5aQHhGdoTyJLLIpoW+AtPIcvkgsn3UQ/RMTrOyZLwcMNc1gRMl5myPPPAIOItsOa1GJuqtyBfnGcL7aHlgnat5qG1VYgTZA/vjmOxPZOG3bswDjgOjlK8LTQEvgGOFOJDL3gscRPbHRmsw/wD5iKuJqm+5OtGO3As9SGl0IrOtPPAGMT6E4zO/SRNL/gNVZHTiig40MgAAAABJRU5ErkJggg=="/>}
-                                      aria-label="Like it"
-                                      onClick={() => {
-                                        this.like(blob.returnValues._id)
-                                      }}
-                                    >
-                                      like it
-                                    </Button>
-                                  ):
-                                  (
-                                    <Button
-                                      variant="heavy"
-                                      aria-label="Unlike it"
-                                      onClick={() => {
-                                        this.unlike(blob.returnValues._id)
-                                      }}
-                                    >
-                                      <Image boxSize="25px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABJ0lEQVRIie3UsSuFYRTH8Q/uILtbDEzsEpMk2y13MIlBBuVfMBopE4tSMpDMZgwWZVTKIOUWWVGSWwz3eev1dnlc3lsGvzqd87yn5/c9w3kf/pBacI87bKM/b0Af3lLxhKE8AXPB+AKnoT6MXWptADAS8hnWQj2cF2Aes6E+V5seXn4LaMUqNlHAPi7RG/pXMUDhi14HdjCJKtZxFHoDIR/HAGkl25FoN5wfsIiJEGXc+rhR6aiglJi0ZADpb89ox0IwTDSIpciwFfTEAMm5HDHL6iDt08ia/kh5A4ohPzYLMBXyXjMARYzjFcvNAMyo/VdbuM4b0IUxtelX0o28ANNok5k+L0A3RtWZPqvsU1Hx+XNQLzZik2QBJdx8w7iKE3TGAP+qq3d99VWqfM7/ZgAAAABJRU5ErkJggg=="/>
-                                    </Button>
-                                  )
-                                ) :
-                                (
-                                  <Spinner />
-                                )
-
-                              )
+                              <>
+                              <Text>
+                              <b>{blob.metadata.description}</b>
+                              </Text>
+                              <Divider mt="4" />
+                              </>
                             )
-                          }
-                          </Center>
-                        </Box>
-                      )
-                    })
-                  }
+                          )
+                        }
+
+                        <Text>
+                        <p><small>Token ID: {blob.returnValues._id}</small></p>
+                        <p style={{
+                          whiteSpace: "nowrap",
+                          width: "100%",                   /* IE6 needs any width */
+                          overflow: "hidden",              /* "overflow" value must be different from  visible"*/
+                          oTextOverflow: "ellipsis",    /* Opera < 11*/
+                          textOverflow:   "ellipsis",    /* IE, Safari (WebKit), Opera >= 11, FF > 6 */
+                        }}>
+                          <small>Creator: <Link to={`/saved-blobs/?address=${blob.creator}`}><Avatar src={makeBlockie(blob.creator)} size='2xs' alt="" />{' '}{blob.creator}</Link></small>
+                        </p>
+                        <p><small><Link href={`https://epor.io/tokens/${this.state.itoken.options.address}/${blob.returnValues._id}`} target="_blank">View on Epor.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></small></p>
+                        <p><small><Link href={`https://unifty.io/xdai/collectible.html?collection=${this.state.itoken.options.address}&id=${blob.returnValues._id}`} target="_blank">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></Link></small></p>
+                        </Text>
+                        <Divider mt="4" />
+                        <Center>
+                          <Text>
+                            <p>Likes: {this.state.likes[blob.returnValues._id].likes}</p>
+                          </Text>
+                        </Center>
+                        <Center>
+
+                        {
+                          (
+                            this.state.coinbase &&
+                            (
+                              !this.state.loadingLikes[blob.returnValues._id] ?
+                              (
+                                !this.state.likes[blob.returnValues._id].liked ?
+                                (
+                                  <Button
+                                    variant="heavy"
+                                    leftIcon={<Image boxSize="25px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAC3UlEQVRoge2ZPWgUQRTHf2f0NBYGJTYSxELwExKCwYA2KgiKpFHsLC1EMViIFiIGK7HRRkUQJJigCGJhYaEoKIqNBDvNKRJN/Iz4hacYE4t3x769u72dm7nb2eJ+sDDsvPvP/92+/ZgZaNIk9cwBTgHvgXfAHWCHV0c1chqYqXAM+DRlSjuQp3ICM8ABf9bM2ENg9gnQAVxX574Bbd7cGTBEYPZo4VwWeKnO7/VjLZ4W4DOB0S7V16/OX03emhm9BCbHgYzq61R9z10GmeXy4xi2qfZtxGyRV6q9pIEenHhK8C/vKunLqr58wr6M6CMw+JvyJ02H6p9M1lo8C4EJAoMXKsRsVf0jyVkz4zKBuQkkoVIOqZjB5KzFs53wm7YvIu6GitmfjLV42oAxAmNXIuJmA19V3IpE3BlwicDUR2BxRNwGFfc6GWvxbAGmCYztrBI7oOIuNtpYa2HAHDBFuL6jjmsxmo+r/PYv8BYYRq6Us/mHhqZNSqfI9xr0ziH3jBX6Upseuw10TyIvN1PN87YJ5JTIYWRqWAk9mCstwFrgVonuRhsxXfPZKnH1TKBIBripdIdtREyNNSIBgG6lO2Yj4DuBBUr3V1RQI+cDrixV7S9RQWlOYL1qR36xpjmBzap9z0bA9z0wrnS7bQR8JrBKaU5SpVLSWkK6fO4jH4oVSWsCm1Tbqv7BXwllgE9Kc42tkK8EupTeB8ILYmWksYR0/d8l5o9JYwJ1qX/wU0LzgR9Kb7mLmI8E9imtZ65iJvMBvcb5D1jkMN4ywsvx/Q5aQHhGdoTyJLLIpoW+AtPIcvkgsn3UQ/RMTrOyZLwcMNc1gRMl5myPPPAIOItsOa1GJuqtyBfnGcL7aHlgnat5qG1VYgTZA/vjmOxPZOG3bswDjgOjlK8LTQEvgGOFOJDL3gscRPbHRmsw/wD5iKuJqm+5OtGO3As9SGl0IrOtPPAGMT6E4zO/SRNL/gNVZHTiig40MgAAAABJRU5ErkJggg=="/>}
+                                    aria-label="Like it"
+                                    onClick={() => {
+                                      this.like(blob.returnValues._id)
+                                    }}
+                                  >
+                                    Like it
+                                  </Button>
+                                ):
+                                (
+                                  <Button
+                                    variant="heavy"
+                                    aria-label="Unlike it"
+                                    onClick={() => {
+                                      this.unlike(blob.returnValues._id)
+                                    }}
+                                  >
+                                    <Image boxSize="25px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABJ0lEQVRIie3UsSuFYRTH8Q/uILtbDEzsEpMk2y13MIlBBuVfMBopE4tSMpDMZgwWZVTKIOUWWVGSWwz3eev1dnlc3lsGvzqd87yn5/c9w3kf/pBacI87bKM/b0Af3lLxhKE8AXPB+AKnoT6MXWptADAS8hnWQj2cF2Aes6E+V5seXn4LaMUqNlHAPi7RG/pXMUDhi14HdjCJKtZxFHoDIR/HAGkl25FoN5wfsIiJEGXc+rhR6aiglJi0ZADpb89ox0IwTDSIpciwFfTEAMm5HDHL6iDt08ia/kh5A4ohPzYLMBXyXjMARYzjFcvNAMyo/VdbuM4b0IUxtelX0o28ANNok5k+L0A3RtWZPqvsU1Hx+XNQLzZik2QBJdx8w7iKE3TGAP+qq3d99VWqfM7/ZgAAAABJRU5ErkJggg=="/>
+                                  </Button>
+                                )
+                              ) :
+                              (
+                                <Spinner />
+                              )
+
+                            )
+                          )
+                        }
+                        </Center>
+                      </Box>
+                    )
+                  })
+                }
                 </SimpleGrid>
+                </Box>
                 </>
               )
 
             )
           )
         }
-
+      </VStack>
       </Box>
     );
   }

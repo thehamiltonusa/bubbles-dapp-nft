@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link } from 'gatsby';
 
 import { Box, Center, Heading, Text } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon,ArrowForwardIcon } from '@chakra-ui/icons';
 import SEO from '../components/SEO';
 
 import Logo from '../components/Common/Logo';
@@ -33,7 +33,13 @@ const SecondPage = () => (
       <Link to="/">
         {' '}
         <ArrowBackIcon />
-        Go back to the homepage
+        Homepage
+      </Link>
+      {'\u00A0\u00A0\u00A0\u00A0\u00A0'}
+      <Link to="/all-saved-blobs">
+        {' '}
+        All bubbles page
+        <ArrowForwardIcon />
       </Link>
     </Center>
   </Layout>
