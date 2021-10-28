@@ -1,54 +1,135 @@
-<h3  align="center">
+This project was bootstrapped with [Create Eth App](https://github.com/paulrberg/create-eth-app).
 
-<br>
+## Project Structure
 
-<p align="center">
-<img src="https://user-images.githubusercontent.com/1754676/111070745-0c1ecb80-84f9-11eb-9128-fff8b2ab2b40.png"  alt="Blobs"></p>
+The default template is a monorepo created with [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/).
 
-</h3>
+Workspaces makes it possible to setup multiple packages in such a way that we only need to run `yarn install` once to install all of them in
+a single pass. Dependencies are hoisted at the root.
 
-<h4  align="center">Generate beautiful blob shapes for web and flutter apps. </h4>
+```
+my-eth-app
+├── README.md
+├── node_modules
+├── package.json
+├── .gitignore
+└── packages
+    ├── contracts
+    │   ├── README.json
+    │   ├── package.json
+    │   └── src
+    │       ├── abis
+    │       │   ├── erc20.json
+    │       │   └── ownable.json
+    │       ├── addresses.js
+    │       └── index.js
+    ├── react-app
+    │   ├── README.md
+    │   ├── node_modules
+    │   ├── package.json
+    │   ├── public
+    │   │   ├── favicon.ico
+    │   │   ├── index.html
+    │   │   ├── logo192.png
+    │   │   ├── logo512.png
+    │   │   ├── manifest.json
+    │   │   └── robots.txt
+    │   └── src
+    │       ├── App.css
+    │       ├── App.js
+    │       ├── App.test.js
+    │       ├── ethereumLogo.svg
+    │       ├── index.css
+    │       ├── index.js
+    │       ├── serviceWorker.js
+    │       └── setupTests.js
+    └── subgraph
+        ├── README.md
+        ├── abis
+        │   └── erc20.json
+        ├── package.json
+        ├── schema.graphql
+        ├── src
+        │   └── mappings
+        │       ├── tokens.ts
+        │       └── transfers.ts
+        └── subgraph.yaml
+```
 
-&nbsp;
+Owing to this dependency on Yarn Workspaces, Create Eth App can't be used with npm.
 
-<div class="highlight highlight-source-shell">
-<pre>
-<div align="center"><strong >Blobs Generator</strong></div>
-<div align="center"><a align="center" href="https://blobs.app/">https://blobs.app/</a></div>
-</pre>
-</div>
+## Available Scripts
 
-<p align="center">
-<img src="https://user-images.githubusercontent.com/1754676/111070973-0f668700-84fa-11eb-9457-4d6282e90eec.png"  alt="Social preview"></p>
+In the project directory, you can run:
 
+### React App
 
+#### `yarn react-app:start`
 
-### Features
-  - Choose any solid colors
-  - Set gradient colors
-  - Use Patterns
-  - Clip Image
-  - Outlined blob
-  - SVG Code - view/copy/download
-  - Flutter blob code
-  - Save and view blobs
-  - Tiny blob change sound
-  - PWA - Offline support
-  - Custom sharable URL
-  - Dark theme
+Runs the React app in development mode.<br>
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-### Development
+The page will automatically reload if you make changes to the code.<br>
+You will see the build errors and lint warnings in the console.
 
-- Clone the Repository `git clone https://github.com/lokesh-coder/blobs.app.git`
+#### `yarn react-app:test`
 
-- Install npm packages using `yarn install`
+Runs the React test watcher in an interactive mode.<br>
+By default, runs tests related to files changed since the last commit.
 
-- Run in dev mode
-  `yarn dev`
+[Read more about testing React.](https://facebook.github.io/create-react-app/docs/running-tests)
 
-- Run in build mode
-  `yarn build`
+#### `yarn react-app:build`
 
-### License
+Builds the React app for production to the `build` folder.<br />
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-MIT License
+The build is minified and the filenames include the hashes.<br />
+Your app is ready to be deployed!
+
+See the React documentation on [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+#### `yarn react-app:eject`
+
+**Note: this is a one-way operation. Once you `react-app:eject`, you can’t go back!**
+
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` the React app at any time. This command will
+remove the single build dependency from your React package.
+
+Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right
+into the `react-app` package so you have full control over them. All of the commands except `react-app:eject` will still work,
+but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+
+You don’t have to ever use `react-app:eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+### Subgraph
+
+The Graph is a tool for for indexing events emitted on the Ethereum blockchain. It provides you with an easy-to-use GraphQL API. <br/>
+
+To learn more, check out the [The Graph documentation](https://thegraph.com/docs).
+
+#### `yarn subgraph:codegen`
+
+Generates AssemblyScript types for smart contract ABIs and the subgraph schema.
+
+#### `yarn subgraph:build`
+
+Compiles the subgraph to WebAssembly.
+
+#### `yarn subgraph:auth`
+
+Before deploying your subgraph, you need to sign up on the
+[Graph Explorer](https://thegraph.com/explorer/). There, you will be given an access token. Drop it in the command
+below:
+
+```sh
+GRAPH_ACCESS_TOKEN=your-access-token-here yarn subgraph:auth
+```
+
+#### `yarn subgraph:deploy`
+
+Deploys the subgraph to the official Graph Node.<br/>
+
+Replace `paulrberg/create-eth-app` in the package.json script with your subgraph's name.
+
+You may also want to [read more about the hosted service](https://thegraph.com/docs/quick-start#hosted-service).
