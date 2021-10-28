@@ -86,7 +86,7 @@ function AllSavedBlobs(){
         {
           nfts?.map((string) => {
             const blob = JSON.parse(string);
-            if(blob.address.toLowerCase() !== token.options.address.toLowerCase()){
+            if(blob.address.toLowerCase() !== token.address.toLowerCase()){
               return
             }
             return(
@@ -140,9 +140,9 @@ function AllSavedBlobs(){
                 </p>
                 {
                   netId === 0x89 &&
-                  <p><small><a href={`https://opensea.io/assets/matic/${token.options.address}/${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Opensea{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
+                  <p><small><a href={`https://opensea.io/assets/matic/${token.address}/${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Opensea{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
                 }
-                <p><small><a href={`https://unifty.io/${netId === 4 ? "rinkeby" : netId === 0x89 ? "matic" : netId === 0x38 ? "bsc" : "xdai"}/collectible.html?collection=${token.options.address}&id=${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
+                <p><small><a href={`https://unifty.io/${netId === 4 ? "rinkeby" : netId === 0x89 ? "matic" : netId === 0x38 ? "bsc" : "xdai"}/collectible.html?collection=${token.address}&id=${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
                 </Text>
                 <Divider mt="4" />
                 <Center>

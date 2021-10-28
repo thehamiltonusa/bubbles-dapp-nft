@@ -1,5 +1,6 @@
 import React,{useState,useMemo,useCallback} from 'react';
 import { addresses, abis } from "@project/contracts";
+import { ethers } from "ethers";
 
 import {
   Box,
@@ -17,7 +18,7 @@ import {
   Spinner,
   Text
  } from '@chakra-ui/react';
- import { SavedIcon, TwitterIcon, BookmarkIcon } from '../components/Common/Icons';
+import { SavedIcon, TwitterIcon, BookmarkIcon } from '../components/Common/Icons';
 
 import ReactDOMServer from 'react-dom/server';
 import SEO from '../components/SEO';
@@ -31,7 +32,6 @@ import Nav from '../components/Nav';
 import Layout from '../components/Layout';
 import Modal from '../components/Common/Modal';
 import { QuestionIcon } from '../components/Common/Icons';
-import Web3 from 'web3';
 import IPFS from 'ipfs-http-client-lite';
 import Blob from '../components/Blob';
 import { dynamic } from '../state';
@@ -86,8 +86,8 @@ function Home(){
         return;
       }
     }
-    const allTxs = await provider.eth.getTransactionCount(coinbase,'pending');
-    const confirmedTxs = await provider.eth.getTransactionCount(coinbase);
+    const allTxs = await provider.getTransactionCount(coinbase,'pending');
+    const confirmedTxs = await provider.getTransactionCount(coinbase);
     if(allTxs > confirmedTxs){
       alert("Wait all pending txs be confirmed");
       setMinting(false)
@@ -149,20 +149,25 @@ function Home(){
       recipient: coinbase,
       value: 500
     }];
-    let value = 10 ** 18;
+    let value = '1';
     if(netId === 0x38){
-      value = 18*10**14
+      value = '0.0018'
     }
+    const signer = provider.getSigner()
+
+    const tokenWithSigner = token.connect(signer);
     let method;
     if(netId === 0x89){
-      method = token.methods.mint(fees,uri);
+      method = tokenWithSigner.mint(fees,uri,{
+        value: ethers.utils.parseEther(value),
+      });
     } else {
-      method = token.methods.mint(tokenId,fees,1, uri);
+      method = tokenWithSigner.mint(tokenId,fees,1, uri,{
+        value: ethers.utils.parseEther(value),
+      });
     }
-    await method.send({
-      from: coinbase,
-      value: value,
-    });
+    const tx = await method;
+    await tx.wait();
     setMinting(false)
     return(true);
 
@@ -263,16 +268,14 @@ function Home(){
               <p>Only {netId === 0x89 ? 10000 : 200000} Unique Bubbles will ever exist.</p>
               </small>
               {
-                (
-                  totalSupply && netId === 0x89 ?
-                  (
-                    <p><b>Bubbles left: {10000 - totalSupply}</b></p>
-                  ) :
-                  (
-                    totalSupply &&
-                    <p><b>Bubbles left: {200000 - totalSupply}</b></p>
-                  )
-                )
+                netId && totalSupply &&
+                <>
+                {
+                  totalSupply >= 0 && netId === 0x89 ?
+                  <p><b>Bubbles left: {10000 - totalSupply}</b></p> :
+                  totalSupply >= 0 && <p><b>Bubbles left: {200000 - totalSupply}</b></p>
+                }
+                </>
               }
               <Modal
                 title="Info"

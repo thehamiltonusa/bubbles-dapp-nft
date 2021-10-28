@@ -1,5 +1,5 @@
 import { useCallback,useMemo, useState } from "react";
-import Web3 from "web3";
+import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 
 import { getLegacy3BoxProfileAsBasicProfile } from '@ceramicstudio/idx';
@@ -60,7 +60,7 @@ function useWeb3Modal(config = {}) {
       setCoinbase();
       setProfile()
       setNetId(0x89);
-      setProvider(new Web3("https://rpc-mainnet.maticvigil.com"));
+      setProvider(new ethers.providers.JsonRpcProvider("https://rpc-mainnet.maticvigil.com"));
     },
     [web3Modal],
   );
@@ -70,22 +70,28 @@ function useWeb3Modal(config = {}) {
     try{
       setConnecting(true)
       setAutoLoaded(true);
-      const newProvider = await web3Modal.connect();
-      const web3 = new Web3(newProvider);
-      const newCoinbase = await web3.eth.getCoinbase();
-      const newNetId = await web3.eth.net.getId();
-      setProvider(web3);
+      const conn = await web3Modal.connect();
+      const newProvider = new ethers.providers.Web3Provider(conn,"any");
+      const signer = newProvider.getSigner()
+      const newCoinbase = await signer.getAddress();
+
+      const {chainId} = await newProvider.getNetwork();
+      setProvider(newProvider);
       setCoinbase(newCoinbase);
-      setNetId(newNetId);
+      setNetId(chainId);
       setNoProvider(true);
-      newProvider.on('accountsChanged', accounts => {
+      conn.on('accountsChanged', accounts => {
+        const newProvider = new ethers.providers.Web3Provider(conn,"any");
+        setProvider(newProvider)
         setCoinbase(accounts[0]);
       });
-      newProvider.on('chainChanged', async chainId => {
+      conn.on('chainChanged', async chainId => {
+        const newProvider = new ethers.providers.Web3Provider(conn,"any");
+        setProvider(newProvider)
         setNetId(Number(chainId))
       });
       // Subscribe to provider disconnection
-      newProvider.on("disconnect", async (error: { code: number; message: string }) => {
+      conn.on("disconnect", async (error: { code: number; message: string }) => {
         logoutOfWeb3Modal();
       });
       setConnecting(false);
@@ -113,21 +119,20 @@ function useWeb3Modal(config = {}) {
   useMemo(() => {
 
     if(!noProvider && !window.ethereum?.selectedAddress && !autoLoaded && !web3Modal.cachedProvider && !connecting){
-      setProvider(new Web3("https://rpc-mainnet.maticvigil.com"));
+      setProvider(new ethers.providers.JsonRpcProvider("https://rpc-mainnet.maticvigil.com"));
       setNetId(0x89);
       /*
       if(window.ethereum?.networkVersion === '56'){
-        setProvider(new Web3("https://bsc-dataseed.binance.org/"));
+        setProvider(new ethers.providers.Web3Provider("https://bsc-dataseed.binance.org/"));
         setNetId(0x38);
       } else if(window.ethereum?.networkVersion === '137'){
-        setProvider(new Web3("https://rpc-mainnet.maticvigil.com"));
+        setProvider(new ethers.providers.Web3Provider("https://rpc-mainnet.maticvigil.com"));
         setNetId(0x89);
       } else {
-        setProvider(new Web3("https://rpc.xdaichain.com/"));
+        setProvider(new ethers.providers.Web3Provider("https://rpc.xdaichain.com/"));
         setNetId(0x64);
       }
       */
-
 
       setNoProvider(true);
     }

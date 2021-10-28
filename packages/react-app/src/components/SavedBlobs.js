@@ -135,7 +135,7 @@ function AllSavedBlobs(){
                 }}>
                   <small>Creator: <Link to={`/saved-blobs/?address=${blob.creator}`}><Avatar src={makeBlockie(blob.creator)} size='2xs' alt="" />{' '}{blob.creator}</Link></small>
                 </p>
-                <p><small><a href={`https://unifty.io/xdai/collectible.html?collection=${token.options.address}&id=${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
+                <p><small><a href={`https://unifty.io/xdai/collectible.html?collection=${token.address}&id=${blob.returnValues._id}`} target="_blank" rel="noreferrer">View on Unifty.io{' '}<ExternalLinkIcon fontSize="18px" /></a></small></p>
                 </Text>
                 <Divider mt="4" />
                 <Center>

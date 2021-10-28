@@ -3,6 +3,7 @@ import { getLegacy3BoxProfileAsBasicProfile } from '@ceramicstudio/idx';
 import { addresses, abis } from "@project/contracts";
 //import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 
+import { ethers } from "ethers";
 
 import useWeb3Modal from "./useWeb3Modal";
 
@@ -34,7 +35,7 @@ function useContract() {
   let ids = [];
 
   const getMetadata = async(id,erc1155) => {
-    const uriToken = await erc1155.methods.uri(id).call();
+    const uriToken = await erc1155.uri(id);
     const metadataToken = JSON.parse(await (await fetch(`${uriToken.replace("ipfs://","https://ipfs.io/ipfs/")}`)).text());
     fetch(metadataToken.image.replace("ipfs://","https://ipfs.io/ipfs/"));
     return(metadataToken)
@@ -42,13 +43,13 @@ function useContract() {
 
   const getTotalSupply = useCallback(async () => {
 
-    const totalSupply = await token.methods.totalSupply().call();
+    const totalSupply = Number(await token.totalSupply());
     setSupply(totalSupply);
     return(totalSupply)
   },[token])
 
   const getCreator = useCallback(async (id) => {
-    const creator = await token.methods.creators(id).call();
+    const creator = await token.creators(id);
     //const creator = res.returnValues._to;
     let profile;
     let getProfile = true;
@@ -81,14 +82,14 @@ function useContract() {
 
   const handleEvents = useCallback(async(err,res) => {
     try{
-      if(res.address !== token.options.address){
+      if(res.address !== token.address){
         Promise.reject("Changed network")
       }
       const id = res.returnValues._id;
       if(ids.includes(id)){
         return;
       }
-      const creator = await token.methods.creators(id).call();
+      const creator = await token.creators(id);
       const metadata = await getMetadata(id,token)
       getLegacy3BoxProfileAsBasicProfile(creator).then(profile => {
         const creatorProfile = {
@@ -142,7 +143,7 @@ function useContract() {
                           return y.returnValues._id - x.returnValues._id;
                     })]);
         }
-        const balance = await token.methods.balanceOf(coinbase,id).call();
+        const balance = await token.balanceOf(coinbase,id);
         if(balance > 0 && !myOwnedNfts.includes(JSON.stringify(obj))){
           const newMyOwnedNfts = myOwnedNfts;
           newMyOwnedNfts.push(JSON.stringify(obj));
@@ -166,7 +167,7 @@ function useContract() {
 
   const handleEventsSubgraph = useCallback(async(res) => {
     try{
-      if(res.address !== token.options.address){
+      if(res.address !== token.address){
         Promise.reject("Changed network")
       }
       const id = res.id;
@@ -271,9 +272,9 @@ function useContract() {
     if(provider && netId && !token){
       ids = [];
       let newClient;
-      let newToken = new provider.eth.Contract(abis.erc1155p,addresses.erc1155.polygon);
+      let newToken = new ethers.Contract(addresses.erc1155.polygon,abis.erc1155p,provider);
       if(netId === 4){
-        newToken = new provider.eth.Contract(abis.erc1155,addresses.erc1155.rinkeby)
+        newToken = new ethers.Contract(addresses.erc1155.rinkeby,abis.erc1155,provider)
         /*
         newClient = new ApolloClient({
           uri: APIURL_RINKEBY,
@@ -282,7 +283,7 @@ function useContract() {
         */
       }
       if(netId === 0x64){
-        newToken = new provider.eth.Contract(abis.erc1155,addresses.erc1155.xdai)
+        newToken = new ethers.Contract(addresses.erc1155.xdai,abis.erc1155,provider)
         /*
         newClient = new ApolloClient({
           uri: APIURL_XDAI,
@@ -291,7 +292,7 @@ function useContract() {
         */
       }
       if(netId === 0x38){
-        newToken = new provider.eth.Contract(abis.erc1155,addresses.erc1155.bsc)
+        newToken = new ethers.Contract(addresses.erc1155.bsc,abis.erc1155,provider)
       }
       setToken(newToken)
       //setClient(newClient);
@@ -333,19 +334,19 @@ function useContract() {
 
   useMemo(async () => {
     if(token && !checkingEvents){
+      token.on("URI", async (value,id) => {
+        const res = {
+          address: token.address,
+          returnValues: {
+            _id: id,
 
-      token.events.URI({
-        filter: {
-        },
-        fromBlock: 'latest'
-      },async (err,res) => {
-        if(!err){
-          setLoadingNFTs(true);
-          await getTotalSupply();
-          await handleEvents(err,res);
-          setLoadingNFTs(false);
-
+          }
         }
+        setLoadingNFTs(true);
+        await getTotalSupply();
+        await handleEvents(null,res);
+        setLoadingNFTs(false);
+
       });
       setCheckingEvents(true);
     }
@@ -404,7 +405,7 @@ function useContract() {
             continue;
           }
           await handleEventsSubgraph({
-                  address: token.options.address,
+                  address: token.address,
                   id: token.tokenID,
                   owner: token.owner.id,
                   creator: token.creator.id,
@@ -441,12 +442,16 @@ function useContract() {
       for(let i = totalSupply; i >= 1 ; i--){
 
         const res = {
-          address: token.options.address,
+          address: token.address,
           returnValues: {
             _id: i
           }
         };
-        await handleEvents(null,res)
+        try{
+          await handleEvents(null,res)
+        } catch(err){
+          console.log(err)
+        }
         if(i === 1){
           setLoadingNFTs(false);
         }
